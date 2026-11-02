@@ -3,20 +3,20 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/helpers/session.php';
-require_once __DIR__ . '/repositories/ProductRepository.php';
+require_once __DIR__ . '/repositories/LopHocPhanRepository.php';
 
-$repository = new ProductRepository(getDatabaseConnection());
+$repository = new LopHocPhanRepository(getDatabaseConnection());
 
 // Lấy và kiểm tra ID từ tham số URL
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
-$product = null;
+$classItem = null;
 if ($id && $id > 0) {
-    $product = $repository->getById((int)$id);
+    $classItem = $repository->getById((int)$id);
 }
 
-// Nếu không tìm thấy ID hoặc sản phẩm không tồn tại, trả về HTTP 404
-if (!$product) {
+// Nếu không tìm thấy hoặc ID không hợp lệ, trả về HTTP 404
+if (!$classItem) {
     http_response_code(404);
     ?>
     <!DOCTYPE html>
@@ -24,36 +24,17 @@ if (!$product) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>404 - Không Tìm Thấy Sản Phẩm</title>
+        <title>404 - Không Tìm Thấy Lớp Học Phần</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
         <style>
-            body {
-                font-family: 'Plus Jakarta Sans', sans-serif;
-                background-color: #f8fafc;
-                color: #0f172a;
-            }
-            .card-404 {
-                background: #ffffff;
-                border: 1px solid #e2e8f0;
-                border-radius: 16px;
-                box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
-            }
-            .btn-accent {
-                background-color: #4f46e5;
-                border-color: #4f46e5;
-                color: #ffffff;
-                border-radius: 10px;
-                font-weight: 600;
-                padding: 0.6rem 1.25rem;
-            }
-            .btn-accent:hover {
-                background-color: #4338ca;
-                color: #ffffff;
-            }
+            body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+            .card-404 { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; box-shadow: 0 4px 20px -2px rgba(15,23,42,0.05); }
+            .btn-accent { background-color: #4f46e5; border-color: #4f46e5; color: #ffffff; border-radius: 10px; font-weight: 600; padding: 0.6rem 1.4rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.45rem; }
+            .btn-accent:hover { background-color: #4338ca; color: #ffffff; }
         </style>
     </head>
     <body class="d-flex align-items-center min-vh-100">
@@ -62,16 +43,16 @@ if (!$product) {
                 <div class="col-md-6 col-lg-5">
                     <div class="card-404 py-5 px-4">
                         <div class="mb-4">
-                            <span class="d-inline-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded-circle" style="width: 72px; height: 72px;">
+                            <span class="d-inline-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded-circle" style="width: 76px; height: 76px;">
                                 <i class="fa-solid fa-triangle-exclamation fa-2x"></i>
                             </span>
                         </div>
-                        <h2 class="fw-bold mb-2 text-dark">404 - Không Tìm Thấy</h2>
+                        <h2 class="fw-bold mb-2 text-dark">404 - Lớp Học Phần Không Tồn Tại</h2>
                         <p class="text-secondary small mb-4">
-                            Sản phẩm với định danh <code>ID: <?= e($_GET['id'] ?? 'N/A') ?></code> không tồn tại trên hệ thống hoặc đã bị gỡ bỏ trước đó.
+                            Lớp học phần với định danh <code>ID: <?= e($_GET['id'] ?? 'N/A') ?></code> không tồn tại trên hệ thống hoặc đã được xóa trước đó.
                         </p>
-                        <a href="index.php" class="btn btn-accent">
-                            <i class="fa-solid fa-arrow-left me-1"></i> Quay lại danh sách
+                        <a href="index.php" class="btn-accent">
+                            <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách lớp học phần
                         </a>
                     </div>
                 </div>
@@ -88,14 +69,14 @@ if (!$product) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi Tiết: <?= e($product['name']) ?> - ShopDemo</title>
+    <title><?= e($classItem['ma_lop']) ?> - <?= e($classItem['ten_mon_hoc']) ?> | StudentHub</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap 5.3 & Font Awesome -->
+    <!-- Bootstrap 5.3 & Font Awesome 6 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
@@ -119,44 +100,67 @@ if (!$product) {
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Topbar Minimalist */
         .top-navbar {
             background: #ffffff;
             border-bottom: 1px solid var(--border-light);
             padding: 0.85rem 0;
         }
         .brand-logo-box {
-            width: 38px;
-            height: 38px;
-            background: #eef2ff;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
             color: #4f46e5;
-            border-radius: 10px;
+            border-radius: 12px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.15rem;
+            font-size: 1.25rem;
+            border: 1px solid #c7d2fe;
         }
 
-        /* Card container */
-        .dashboard-card {
+        /* Bento Grid Card Design */
+        .bento-card {
             background: #ffffff;
             border: 1px solid var(--border-light);
-            border-radius: 16px;
+            border-radius: 18px;
             box-shadow: var(--card-shadow);
+            padding: 1.5rem;
+            height: 100%;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .bento-card:hover {
+            box-shadow: 0 8px 30px -4px rgba(15, 23, 42, 0.08);
         }
 
-        .sku-badge {
+        .bento-hero {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e0e7ff;
+        }
+
+        .bento-icon-circle {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Badges */
+        .code-badge-lg {
             font-family: 'Courier New', Courier, monospace;
-            background: #f1f5f9;
-            color: #334155;
-            border: 1px solid var(--border-light);
-            border-radius: 6px;
-            padding: 0.25rem 0.65rem;
-            font-size: 0.85rem;
-            font-weight: 600;
+            background: #eef2ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+            border-radius: 8px;
+            padding: 0.35rem 0.85rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
-        /* Soft Badges */
         .badge-soft-active {
             background-color: #ecfdf5;
             color: #059669;
@@ -180,35 +184,6 @@ if (!$product) {
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-        }
-
-        /* Detail Attribute Rows */
-        .detail-row {
-            display: flex;
-            padding: 1rem 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-        .detail-label {
-            width: 200px;
-            flex-shrink: 0;
-            color: var(--text-secondary);
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        .detail-value {
-            flex-grow: 1;
-            font-size: 0.95rem;
-            color: var(--text-primary);
-        }
-
-        .price-highlight {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #0f172a;
-            letter-spacing: -0.02em;
         }
 
         /* Buttons */
@@ -275,11 +250,11 @@ if (!$product) {
             <div class="d-flex align-items-center justify-content-between">
                 <a href="index.php" class="d-flex align-items-center gap-2 text-decoration-none">
                     <div class="brand-logo-box">
-                        <i class="fa-solid fa-cube"></i>
+                        <i class="fa-solid fa-graduation-cap"></i>
                     </div>
                     <div>
-                        <span class="fs-5 fw-bold text-dark d-block lh-1">ShopDemo</span>
-                        <small class="text-secondary" style="font-size: 0.75rem;">Product Management System</small>
+                        <span class="fs-5 fw-bold text-dark d-block lh-1">StudentHub</span>
+                        <small class="text-secondary" style="font-size: 0.75rem;">Quản Lý Lớp Học Phần &bull; Tạ Như Quỳnh</small>
                     </div>
                 </a>
                 <a href="index.php" class="btn-soft-back small">
@@ -290,110 +265,124 @@ if (!$product) {
     </header>
 
     <main class="container pb-5">
-        <!-- Breadcrumb tinh tế -->
+        <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-3">
             <ol class="breadcrumb small">
-                <li class="breadcrumb-item"><a href="index.php" class="text-decoration-none text-secondary">Sản phẩm</a></li>
-                <li class="breadcrumb-item text-secondary active" aria-current="page">Chi tiết #<?= (int)$product['id'] ?></li>
+                <li class="breadcrumb-item"><a href="index.php" class="text-decoration-none text-secondary">Lớp học phần</a></li>
+                <li class="breadcrumb-item text-secondary active" aria-current="page">Chi tiết #<?= (int)$classItem['id'] ?></li>
             </ol>
         </nav>
 
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="dashboard-card overflow-hidden">
-                    <!-- Header Card -->
-                    <div class="p-4 border-bottom d-flex align-items-center justify-content-between" style="border-color: var(--border-light) !important;">
+        <!-- Bento Card Layout -->
+        <div class="row g-4">
+            <!-- 1. BENTO HERO CARD (Toàn chiều rộng): Tiêu đề & Mã lớp & Học kỳ -->
+            <div class="col-12">
+                <div class="bento-card bento-hero">
+                    <div class="d-md-flex align-items-center justify-content-between">
                         <div>
-                            <span class="text-secondary small fw-medium">Sản phẩm ID #<?= (int)$product['id'] ?></span>
-                            <h2 class="h4 fw-bold text-dark mb-0 mt-1"><?= e($product['name']) ?></h2>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="code-badge-lg"><?= e($classItem['ma_lop']) ?></span>
+                                <span class="badge bg-light text-secondary border px-3 py-1 rounded-pill small">
+                                    ID #<?= (int)$classItem['id'] ?>
+                                </span>
+                            </div>
+                            <h1 class="h3 fw-bold text-dark mb-1"><?= e($classItem['ten_mon_hoc']) ?></h1>
+                            <p class="text-secondary mb-0 small">
+                                <i class="fa-regular fa-calendar-check me-1 text-primary"></i>
+                                <?= e($classItem['hoc_ky']) ?> &bull; Khoa Công nghệ Thông tin
+                            </p>
                         </div>
-                        <div>
-                            <?php if ($product['status'] === 'active'): ?>
-                                <span class="badge-soft-active">
-                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Đang bán
-                                </span>
-                            <?php else: ?>
-                                <span class="badge-soft-inactive">
-                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Ngừng bán
-                                </span>
-                            <?php endif; ?>
+                        <div class="mt-3 mt-md-0">
+                            <?= renderTrangThaiBadge($classItem['trang_thai']) ?>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Body Chi Tiết Thuộc Tính -->
-                    <div class="p-4">
-                        <div class="detail-row">
-                            <div class="detail-label">Mã Sản Phẩm (SKU)</div>
-                            <div class="detail-value">
-                                <span class="sku-badge"><?= e($product['code']) ?></span>
-                            </div>
+            <!-- 2. BENTO CARD: Giảng viên phụ trách -->
+            <div class="col-md-6 col-lg-4">
+                <div class="bento-card">
+                    <div class="bento-icon-circle bg-primary-subtle text-primary">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                    </div>
+                    <span class="text-secondary small text-uppercase fw-bold letter-spacing-1 d-block mb-1">
+                        Cán Bộ Giảng Dạy
+                    </span>
+                    <h5 class="fw-bold text-dark mb-2"><?= e($classItem['giang_vien']) ?></h5>
+                    <p class="text-secondary small mb-0">
+                        Phụ trách chuyên môn, hướng dẫn bài tập thực hành & chấm thi kết thúc học phần.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 3. BENTO CARD: Địa điểm & Thời khóa biểu -->
+            <div class="col-md-6 col-lg-4">
+                <div class="bento-card">
+                    <div class="bento-icon-circle bg-amber-subtle text-warning-emphasis" style="background:#fef3c7; color:#b45309;">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <span class="text-secondary small text-uppercase fw-bold letter-spacing-1 d-block mb-1">
+                        Lịch Học & Phòng Học
+                    </span>
+                    <h5 class="fw-bold text-dark mb-1"><?= e($classItem['lich_hoc']) ?></h5>
+                    <div class="text-dark small fw-semibold">
+                        <i class="fa-solid fa-location-dot text-danger me-1"></i>
+                        <?= e($classItem['phong_hoc']) ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. BENTO CARD: Tín chỉ & Sĩ số sinh viên -->
+            <div class="col-md-12 col-lg-4">
+                <div class="bento-card">
+                    <div class="bento-icon-circle bg-success-subtle text-success">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <span class="text-secondary small text-uppercase fw-bold letter-spacing-1 d-block mb-1">
+                        Đào Tạo & Quy Mô
+                    </span>
+                    <div class="d-flex align-items-center gap-3">
+                        <div>
+                            <span class="text-secondary small d-block">Số tín chỉ</span>
+                            <span class="fs-4 fw-bold text-success"><?= (int)$classItem['so_tin_chi'] ?> TC</span>
                         </div>
-
-                        <div class="detail-row">
-                            <div class="detail-label">Đơn Giá Niêm Yết</div>
-                            <div class="detail-value">
-                                <span class="price-highlight"><?= formatCurrency($product['price']) ?></span>
-                            </div>
-                        </div>
-
-                        <div class="detail-row">
-                            <div class="detail-label">Tồn Kho Khả Dụng</div>
-                            <div class="detail-value">
-                                <?php if ((int)$product['quantity'] <= 0): ?>
-                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 rounded-pill fw-semibold">
-                                        Hết hàng (0 sản phẩm)
-                                    </span>
-                                <?php elseif ((int)$product['quantity'] <= 5): ?>
-                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1 rounded-pill fw-semibold">
-                                        <?= (int)$product['quantity'] ?> sản phẩm (Cảnh báo sắp hết)
-                                    </span>
-                                <?php else: ?>
-                                    <span class="fw-semibold text-dark"><?= (int)$product['quantity'] ?> sản phẩm</span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-
-                        <div class="detail-row">
-                            <div class="detail-label">Mô Tả Sản Phẩm</div>
-                            <div class="detail-value">
-                                <?php if (!empty($product['description'])): ?>
-                                    <div class="p-3 bg-light rounded-3 text-secondary" style="white-space: pre-line; line-height: 1.6;">
-                                        <?= e($product['description']) ?>
-                                    </div>
-                                <?php else: ?>
-                                    <span class="text-secondary opacity-75 fst-italic">Chưa có thông tin mô tả chi tiết.</span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-
-                        <div class="detail-row">
-                            <div class="detail-label">Thời Gian Tạo</div>
-                            <div class="detail-value text-secondary small">
-                                <i class="fa-regular fa-clock me-1"></i> <?= formatDateTime($product['created_at']) ?>
-                            </div>
-                        </div>
-
-                        <div class="detail-row">
-                            <div class="detail-label">Cập Nhật Gần Nhất</div>
-                            <div class="detail-value text-secondary small">
-                                <i class="fa-solid fa-arrows-rotate me-1"></i> <?= formatDateTime($product['updated_at']) ?>
-                            </div>
+                        <div class="vr my-1"></div>
+                        <div>
+                            <span class="text-secondary small d-block">Sĩ số tối đa</span>
+                            <span class="fs-4 fw-bold text-dark"><?= (int)$classItem['si_so_toi_da'] ?> SV</span>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Footer Tác Vụ -->
-                    <div class="p-4 bg-light border-top d-flex align-items-center justify-content-between" style="border-color: var(--border-light) !important;">
-                        <a href="index.php" class="btn-soft-back">
-                            <i class="fa-solid fa-arrow-left"></i> Quay lại
-                        </a>
-                        <div class="d-flex gap-2">
-                            <a href="edit.php?id=<?= (int)$product['id'] ?>" class="btn-soft-edit">
+            <!-- 5. BENTO CARD: Thông tin quản trị & Thời gian -->
+            <div class="col-12">
+                <div class="bento-card">
+                    <div class="d-md-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-4 text-secondary small mb-3 mb-md-0">
+                            <div>
+                                <i class="fa-regular fa-clock me-1"></i>
+                                Thời gian tạo: <strong class="text-dark"><?= formatDateTime($classItem['created_at']) ?></strong>
+                            </div>
+                            <div>
+                                <i class="fa-solid fa-arrows-rotate me-1"></i>
+                                Cập nhật: <strong class="text-dark"><?= formatDateTime($classItem['updated_at']) ?></strong>
+                            </div>
+                        </div>
+
+                        <!-- Cụm nút thao tác -->
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="index.php" class="btn-soft-back">
+                                <i class="fa-solid fa-arrow-left"></i> Quay lại
+                            </a>
+                            <a href="edit.php?id=<?= (int)$classItem['id'] ?>" class="btn-soft-edit">
                                 <i class="fa-solid fa-pen"></i> Chỉnh sửa
                             </a>
                             <form action="delete.php" 
                                   method="POST" 
-                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm &quot;<?= e($product['name']) ?>&quot; không?\nHành động này không thể hoàn tác!');">
-                                <input type="hidden" name="id" value="<?= (int)$product['id'] ?>">
+                                  class="d-inline"
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa lớp học phần: &quot;<?= e($classItem['ten_mon_hoc']) ?>&quot; không?\nHành động này không thể hoàn tác!');">
+                                <input type="hidden" name="id" value="<?= (int)$classItem['id'] ?>">
                                 <button type="submit" class="btn-soft-delete">
                                     <i class="fa-solid fa-trash"></i> Xóa
                                 </button>

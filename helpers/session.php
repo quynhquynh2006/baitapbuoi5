@@ -2,16 +2,20 @@
 declare(strict_types=1);
 
 /**
- * Helpers quản lý Session, Flash Messages, Sanitization và Chuyển hướng
+ * ============================================================================
+ * HELPER QUẢN LÝ SESSION, FLASH MESSAGES & TIỆN ÍCH BẢO MẬT
+ * Dự án: StudentHub - Quản Lý Lớp Học Phần (BÀI TẬP VỀ NHÀ 5)
+ * Sinh viên thực hiện: Tạ Như Quỳnh
+ * ============================================================================
  */
 
-// Khởi động session an toàn nếu chưa được khởi động
+// Khởi động session an toàn nếu chưa được khởi tạo
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 /**
- * Thiết lập Flash Message lưu vào Session
+ * Thiết lập Flash Message lưu tạm vào Session
  *
  * @param string $type Loại thông báo ('success', 'danger', 'warning', 'info')
  * @param string $message Nội dung thông báo
@@ -39,7 +43,7 @@ function hasFlash(): bool
 }
 
 /**
- * Lấy ra danh sách toàn bộ Flash Messages và xóa khỏi Session (Chỉ hiển thị 1 lần)
+ * Lấy danh sách Flash Messages và xóa khỏi Session (Chỉ hiển thị 1 lần)
  *
  * @return array
  */
@@ -55,7 +59,7 @@ function getFlashes(): array
 }
 
 /**
- * Render trực tiếp HTML Bootstrap 5 Alert phong cách Soft Pastel cho các Flash Messages
+ * Render trực tiếp HTML Bootstrap 5 Alert phong cách Soft Pastel cho Flash Messages
  *
  * @return string
  */
@@ -76,9 +80,9 @@ function renderFlashMessages(): string
     $html = '';
     foreach ($flashes as $flash) {
         $rawType = $flash['type'];
-        $type = htmlspecialchars($rawType, ENT_QUOTES, 'UTF-8');
+        $type    = htmlspecialchars($rawType, ENT_QUOTES, 'UTF-8');
         $message = htmlspecialchars($flash['message'], ENT_QUOTES, 'UTF-8');
-        $icon = $iconMap[$rawType] ?? '<i class="fa-solid fa-bell me-2 fs-5"></i>';
+        $icon    = $iconMap[$rawType] ?? '<i class="fa-solid fa-bell me-2 fs-5"></i>';
 
         $html .= <<<HTML
         <div class="alert alert-{$type} alert-dismissible fade show shadow-sm border-0 d-flex align-items-center mb-4 custom-pastel-alert" role="alert">
@@ -117,19 +121,7 @@ function redirect(string $url): void
 }
 
 /**
- * Định dạng số tiền sang định dạng tiền tệ Việt Nam Đồng (VND)
- *
- * @param mixed $amount
- * @return string
- */
-function formatCurrency(mixed $amount): string
-{
-    $val = (float)($amount ?? 0);
-    return number_format($val, 0, ',', '.') . ' ₫';
-}
-
-/**
- * Định dạng ngày giờ chuẩn hiển thị thân thiện (d/m/Y H:i)
+ * Định dạng ngày giờ thân thiện theo chuẩn Việt Nam (d/m/Y H:i)
  *
  * @param string|null $datetime
  * @return string
@@ -147,7 +139,21 @@ function formatDateTime(?string $datetime): string
 }
 
 /**
- * Khởi tạo hoặc lấy CSRF token hiện tại trong session
+ * Render Soft Badge trạng thái lớp học phần
+ *
+ * @param string $status 'mo' hoặc 'khoa'
+ * @return string
+ */
+function renderTrangThaiBadge(string $status): string
+{
+    if ($status === 'mo') {
+        return '<span class="badge-soft-active"><i class="fa-solid fa-circle text-emerald-500" style="font-size: 6px;"></i> Đang mở</span>';
+    }
+    return '<span class="badge-soft-inactive"><i class="fa-solid fa-lock text-slate-400" style="font-size: 8px;"></i> Đã khóa</span>';
+}
+
+/**
+ * Lấy CSRF token từ session
  *
  * @return string
  */
@@ -160,7 +166,7 @@ function getCsrfToken(): string
 }
 
 /**
- * Kiểm tra tính hợp lệ của CSRF token
+ * Xác thực tính hợp lệ của CSRF token
  *
  * @param string|null $token
  * @return bool

@@ -1,30 +1,35 @@
 -- ============================================================
--- CSDL: shopdemo
--- Mô tả: Cấu trúc cơ sở dữ liệu cho hệ thống quản lý sản phẩm CRUD
--- Tương thích: MySQL 5.7+, MySQL 8.0+, MariaDB 10.3+
+-- HỆ THỐNG QUẢN LÝ LỚP HỌC PHẦN (StudentHub - lop_hoc_phan)
+-- Sinh viên thực hiện: Tạ Như Quỳnh - Bài Tập Về Nhà 5
+-- CSDL: studenthub_personal
+-- Bảng: lop_hoc_phan
+-- Chuẩn mã hóa: utf8mb4_unicode_ci
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS `shopdemo` 
+CREATE DATABASE IF NOT EXISTS `studenthub_personal` 
 CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
 
-USE `shopdemo`;
+USE `studenthub_personal`;
 
--- Xóa bảng cũ nếu đã tồn tại để tránh xung đột
-DROP TABLE IF EXISTS `products`;
+-- Xóa bảng cũ nếu tồn tại để khởi tạo mới đồng bộ
+DROP TABLE IF EXISTS `lop_hoc_phan`;
 
--- Bảng lưu trữ thông tin sản phẩm
-CREATE TABLE `products` (
-    `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    `code` VARCHAR(50) NOT NULL,
-    `name` VARCHAR(255) NOT NULL,
-    `price` DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
-    `quantity` INT NOT NULL DEFAULT 0,
-    `description` TEXT NULL,
-    `status` ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT `uq_products_code` UNIQUE (`code`),
-    INDEX `idx_products_name` (`name`),
-    INDEX `idx_products_status` (`status`)
+-- Tạo bảng quản lý lớp học phần
+CREATE TABLE IF NOT EXISTS `lop_hoc_phan` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `ma_lop` VARCHAR(50) NOT NULL UNIQUE,
+    `ten_mon_hoc` VARCHAR(255) NOT NULL,
+    `so_tin_chi` INT NOT NULL,
+    `giang_vien` VARCHAR(150) NOT NULL,
+    `phong_hoc` VARCHAR(50) NOT NULL,
+    `lich_hoc` VARCHAR(150) NOT NULL,
+    `si_so_toi_da` INT NOT NULL DEFAULT 40,
+    `trang_thai` ENUM('mo', 'khoa') NOT NULL DEFAULT 'mo',
+    `hoc_ky` VARCHAR(50) NOT NULL DEFAULT 'Học kỳ 1 (2026 - 2027)',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_lop_ten_mon` (`ten_mon_hoc`),
+    INDEX `idx_lop_giang_vien` (`giang_vien`),
+    INDEX `idx_lop_trang_thai` (`trang_thai`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

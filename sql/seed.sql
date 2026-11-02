@@ -1,26 +1,27 @@
 -- ============================================================
--- CSDL: shopdemo
--- Dữ liệu mẫu (Seed Data) kiểm thử tính năng Tìm kiếm & Phân trang
+-- DỮ LIỆU MẪU LỚP HỌC PHẦN (StudentHub - lop_hoc_phan)
+-- Sinh viên: Tạ Như Quỳnh - Bài Tập Về Nhà 5
+-- Dữ liệu gồm 15 lớp học phần chuyên ngành Công nghệ thông tin
 -- ============================================================
 
-USE `shopdemo`;
+USE `studenthub_personal`;
 
--- Xóa dữ liệu cũ trước khi nạp
-TRUNCATE TABLE `products`;
+-- Xóa dữ liệu cũ nếu có
+TRUNCATE TABLE `lop_hoc_phan`;
 
-INSERT INTO `products` (`code`, `name`, `price`, `quantity`, `description`, `status`) VALUES
-('LAP-DELL-01', 'Laptop Dell XPS 13 9315 Core i5', 24990000.00, 15, 'Laptop cao cấp mỏng nhẹ, màn hình 13.4 inch FHD+, RAM 16GB, SSD 512GB.', 'active'),
-('LAP-APL-02', 'MacBook Air M2 13.6 inch 256GB', 26500000.00, 20, 'Chip Apple M2 mạnh mẽ, thời lượng pin lên đến 18 tiếng, vỏ nhôm nguyên khối.', 'active'),
-('LAP-ASU-03', 'Laptop Asus ROG Strix G16 Gaming', 32990000.00, 8, 'Cấu hình gaming khủng Intel Core i7-13650HX, RTX 4060, màn 165Hz.', 'active'),
-('PHO-APL-01', 'Điện thoại iPhone 15 Pro Max 256GB', 29990000.00, 25, 'Khung viền Titan siêu nhẹ, camera tiềm vọng 5x, chip A17 Pro.', 'active'),
-('PHO-SAM-02', 'Điện thoại Samsung Galaxy S24 Ultra', 28490000.00, 18, 'Trí tuệ nhân tạo Galaxy AI, bút S-Pen tích hợp, camera 200MP.', 'active'),
-('PHO-XIA-03', 'Điện thoại Xiaomi 14 Ultra 5G', 22990000.00, 10, 'Hệ thống ống kính Leica chuyên nghiệp, chip Snapdragon 8 Gen 3.', 'active'),
-('TAB-APL-01', 'iPad Pro 11 inch M4 Wi-Fi 128GB', 26990000.00, 12, 'Màn hình OLED Ultra Retina XDR thế hệ mới, thiết kế siêu mỏng.', 'active'),
-('MOU-LOG-01', 'Chuột không dây Logitech MX Master 3S', 2150000.00, 45, 'Cảm biến 8000 DPI hoạt động trên mọi bề mặt, con lăn điện từ MagSpeed.', 'active'),
-('KEY-LOG-02', 'Bàn phím cơ không dây Logitech MX Mechanical', 3450000.00, 30, 'Phím bấm low-profile tactile êm ái, kết nối đa thiết bị linh hoạt.', 'active'),
-('MON-DEL-01', 'Màn hình Dell UltraSharp U2724D 27 inch 2K', 9800000.00, 14, 'Tấm nền IPS Black độ tương phản 2000:1, chuẩn màu đồ họa 98% DCI-P3.', 'active'),
-('MON-LG-02', 'Màn hình Gaming LG UltraGear 27GR75Q', 6790000.00, 22, 'Độ phân giải 2K 165Hz, thời gian đáp ứng 1ms GtG, hỗ trợ G-Sync.', 'active'),
-('EAR-APL-01', 'Tai nghe AirPods Pro 2 MagSafe USB-C', 5490000.00, 35, 'Chống ồn chủ động gấp 2 lần, chip H2, cổng sạc Type-C tiện lợi.', 'active'),
-('EAR-SON-02', 'Tai nghe chụp tai Sony WH-1000XM5', 7990000.00, 16, 'Công nghệ chống ồn hàng đầu thế giới, âm thanh Hi-Res Audio không dây.', 'active'),
-('ACC-ANK-01', 'Sạc Anker Prime 67W 3 Cổng GaN', 1190000.00, 50, 'Công nghệ sạc nhanh GaN III tiên tiến, nhỏ gọn, an toàn tản nhiệt.', 'active'),
-('ACC-OLD-01', 'Chuột quang có dây cổng PS/2 Cổ điển', 50000.00, 0, 'Sản phẩm mẫu cũ đã ngừng kinh doanh và nhập hàng.', 'inactive');
+INSERT INTO `lop_hoc_phan` (`ma_lop`, `ten_mon_hoc`, `so_tin_chi`, `giang_vien`, `phong_hoc`, `lich_hoc`, `si_so_toi_da`, `trang_thai`, `hoc_ky`) VALUES
+('ITEC2104_01', 'Lập trình Web nâng cao với PHP & MySQL', 3, 'TS. Trần Anh Tuấn', 'Lab 03 - Tòa A', 'Thứ 2 (Tiết 1-3)', 40, 'mo', 'Học kỳ 1 (2026 - 2027)'),
+('ITEC2104_02', 'Lập trình Web nâng cao với PHP & MySQL', 3, 'ThS. Nguyễn Thị Minh', 'Lab 04 - Tòa A', 'Thứ 4 (Tiết 7-9)', 40, 'mo', 'Học kỳ 1 (2026 - 2027)'),
+('COMP1020_01', 'Cấu trúc dữ liệu và Giải thuật', 4, 'PGS.TS. Lê Hoàng Sơn', 'P.402 - Tòa C', 'Thứ 3 (Tiết 1-4)', 45, 'mo', 'Học kỳ 1 (2026 - 2027)'),
+('COMP1020_02', 'Cấu trúc dữ liệu và Giải thuật', 4, 'TS. Đặng Quốc Huy', 'P.405 - Tòa C', 'Thứ 5 (Tiết 7-10)', 45, 'khoa', 'Học kỳ 1 (2026 - 2027)'),
+('DBSE3101_01', 'Hệ quản trị Cơ sở dữ liệu và Tối ưu truy vấn', 3, 'ThS. Vũ Hải Đăng', 'Lab 02 - Tòa B', 'Thứ 6 (Tiết 1-3)', 35, 'mo', 'Học kỳ 1 (2026 - 2027)'),
+('SE4002_01', 'Kiến trúc phần mềm và Thiết kế mẫu (Design Patterns)', 3, 'TS. Phạm Minh Khôi', 'P.301 - Tòa B', 'Thứ 2 (Tiết 7-9)', 40, 'mo', 'Học kỳ 1 (2026 - 2027)'),
+('AI3010_01', 'Nhập môn Trí tuệ nhân tạo và Học máy', 4, 'TS. Bùi Mai Trang', 'P.501 - Tòa C', 'Thứ 4 (Tiết 1-4)', 50, 'mo', 'Học kỳ 1 (2026 - 2027)'),
+('NETW2005_01', 'Mạng máy tính và An toàn hệ thống', 3, 'ThS. Hoàng Trọng Nghĩa', 'Lab 01 - Tòa A', 'Thứ 5 (Tiết 1-3)', 40, 'khoa', 'Học kỳ 1 (2026 - 2027)'),
+('DEVOPS302_01', 'Thực hành DevOps và Điện toán đám mây', 3, 'ThS. Nguyễn Văn Thắng', 'Lab 05 - Tòa B', 'Thứ 7 (Tiết 1-3)', 30, 'mo', 'Học kỳ 1 (2026 - 2027)'),
+('SE3001_01', 'Phân tích thiết kế hệ thống thông tin hướng đối tượng', 3, 'TS. Nguyễn Hữu Dũng', 'P.304 - Tòa B', 'Thứ 3 (Tiết 7-9)', 45, 'mo', 'Học kỳ 1 (2026 - 2027)'),
+('MOBI4010_01', 'Phát triển ứng dụng di động đa nền tảng Flutter', 3, 'ThS. Đỗ Quang Huy', 'Lab 04 - Tòa A', 'Thứ 6 (Tiết 7-9)', 35, 'mo', 'Học kỳ 1 (2026 - 2027)'),
+('SEC3022_01', 'An toàn và Bảo mật thông tin trong doanh nghiệp', 3, 'TS. Cao Đức Việt', 'P.205 - Tòa C', 'Thứ 2 (Tiết 4-6)', 40, 'khoa', 'Học kỳ 1 (2026 - 2027)'),
+('IOT2015_01', 'Lập trình thiết bị nhúng và Internet of Things (IoT)', 3, 'ThS. Trương Ngọc Hưng', 'Lab IoT - Tòa B', 'Thứ 5 (Tiết 4-6)', 30, 'mo', 'Học kỳ 1 (2026 - 2027)'),
+('PRJ4900_01', 'Đồ án Chuyên ngành Công nghệ phần mềm', 4, 'Hội đồng Bộ môn CNPM', 'P.Hội thảo - Tòa A', 'Thứ 7 (Tiết 7-10)', 25, 'mo', 'Học kỳ 1 (2026 - 2027)'),
+('COMP1001_01', 'Nhập môn Lập trình và Thuật toán cơ bản', 3, 'ThS. Lê Thanh Thảo', 'P.102 - Tòa C', 'Thứ 3 (Tiết 1-3)', 60, 'khoa', 'Học kỳ 1 (2026 - 2027)');

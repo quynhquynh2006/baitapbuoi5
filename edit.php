@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/helpers/session.php';
-require_once __DIR__ . '/repositories/ProductRepository.php';
+require_once __DIR__ . '/repositories/LopHocPhanRepository.php';
 
-$repository = new ProductRepository(getDatabaseConnection());
+$repository = new LopHocPhanRepository(getDatabaseConnection());
 
 // Lấy ID từ URL
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
@@ -17,7 +17,7 @@ if (!$id || $id <= 0) {
     <html lang="vi">
     <head>
         <meta charset="UTF-8">
-        <title>404 - Không Tìm Thấy Sản Phẩm</title>
+        <title>404 - Không Tìm Thấy Lớp Học Phần</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -33,7 +33,7 @@ if (!$id || $id <= 0) {
                 <div class="col-md-5">
                     <div class="card-404 py-5 px-4">
                         <h2 class="fw-bold mb-2 text-danger">404 Not Found</h2>
-                        <p class="text-secondary small mb-4">ID sản phẩm không hợp lệ hoặc thiếu.</p>
+                        <p class="text-secondary small mb-4">ID lớp học phần không hợp lệ hoặc thiếu.</p>
                         <a href="index.php" class="btn btn-primary" style="background:#4f46e5; border-color:#4f46e5; border-radius:10px;">Quay lại danh sách</a>
                     </div>
                 </div>
@@ -45,16 +45,16 @@ if (!$id || $id <= 0) {
     exit;
 }
 
-$product = $repository->getById((int)$id);
+$classItem = $repository->getById((int)$id);
 
-if (!$product) {
+if (!$classItem) {
     http_response_code(404);
     ?>
     <!DOCTYPE html>
     <html lang="vi">
     <head>
         <meta charset="UTF-8">
-        <title>404 - Không Tìm Thấy Sản Phẩm</title>
+        <title>404 - Không Tìm Thấy Lớp Học Phần</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -70,7 +70,7 @@ if (!$product) {
                 <div class="col-md-5">
                     <div class="card-404 py-5 px-4">
                         <h2 class="fw-bold mb-2 text-danger">404 Not Found</h2>
-                        <p class="text-secondary small mb-4">Không tìm thấy sản phẩm có ID #<?= (int)$id ?> để chỉnh sửa.</p>
+                        <p class="text-secondary small mb-4">Không tìm thấy lớp học phần có ID #<?= (int)$id ?> để cập nhật.</p>
                         <a href="index.php" class="btn btn-primary" style="background:#4f46e5; border-color:#4f46e5; border-radius:10px;">Quay lại danh sách</a>
                     </div>
                 </div>
@@ -84,79 +84,109 @@ if (!$product) {
 
 $errors = [];
 $formData = [
-    'code'        => $product['code'],
-    'name'        => $product['name'],
-    'price'       => (string)$product['price'],
-    'quantity'    => (string)$product['quantity'],
-    'status'      => $product['status'],
-    'description' => $product['description'] ?? '',
+    'ma_lop'       => $classItem['ma_lop'],
+    'ten_mon_hoc'  => $classItem['ten_mon_hoc'],
+    'so_tin_chi'   => (string)$classItem['so_tin_chi'],
+    'giang_vien'   => $classItem['giang_vien'],
+    'phong_hoc'    => $classItem['phong_hoc'],
+    'lich_hoc'     => $classItem['lich_hoc'],
+    'si_so_toi_da' => (string)$classItem['si_so_toi_da'],
+    'trang_thai'   => $classItem['trang_thai'],
+    'hoc_ky'       => $classItem['hoc_ky'],
 ];
 
-// Xử lý gửi biểu mẫu bằng POST (Cập nhật)
+// Xử lý khi gửi form cập nhật qua POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $formData['code']        = strtoupper(trim((string)($_POST['code'] ?? '')));
-    $formData['name']        = trim((string)($_POST['name'] ?? ''));
-    $formData['price']       = trim((string)($_POST['price'] ?? ''));
-    $formData['quantity']    = trim((string)($_POST['quantity'] ?? '0'));
-    $formData['status']      = trim((string)($_POST['status'] ?? 'active'));
-    $formData['description'] = trim((string)($_POST['description'] ?? ''));
+    $formData['ma_lop']       = strtoupper(trim((string)($_POST['ma_lop'] ?? '')));
+    $formData['ten_mon_hoc']  = trim((string)($_POST['ten_mon_hoc'] ?? ''));
+    $formData['so_tin_chi']   = trim((string)($_POST['so_tin_chi'] ?? ''));
+    $formData['giang_vien']   = trim((string)($_POST['giang_vien'] ?? ''));
+    $formData['phong_hoc']    = trim((string)($_POST['phong_hoc'] ?? ''));
+    $formData['lich_hoc']     = trim((string)($_POST['lich_hoc'] ?? ''));
+    $formData['si_so_toi_da'] = trim((string)($_POST['si_so_toi_da'] ?? ''));
+    $formData['trang_thai']   = trim((string)($_POST['trang_thai'] ?? 'mo'));
+    $formData['hoc_ky']       = trim((string)($_POST['hoc_ky'] ?? ''));
 
-    // 1. Kiểm tra mã sản phẩm
-    if ($formData['code'] === '') {
-        $errors['code'] = 'Mã sản phẩm không được để trống.';
-    } elseif (!preg_match('/^[A-Z0-9_-]{3,50}$/', $formData['code'])) {
-        $errors['code'] = 'Mã sản phẩm từ 3-50 ký tự, chỉ gồm chữ hoa, số, dấu gạch nối (-) hoặc gạch dưới (_).';
+    // 1. Kiểm tra mã lớp
+    if ($formData['ma_lop'] === '') {
+        $errors['ma_lop'] = 'Mã lớp học phần không được để trống.';
+    } elseif (!preg_match('/^[A-Z0-9_-]{3,50}$/', $formData['ma_lop'])) {
+        $errors['ma_lop'] = 'Mã lớp phải từ 3 đến 50 ký tự (chữ hoa, số, dấu gạch nối - hoặc _).';
     } else {
-        // Kiểm tra mã sản phẩm duy nhất (loại trừ ID sản phẩm hiện tại)
-        $existing = $repository->getByCode($formData['code'], (int)$id);
+        // Kiểm tra trùng mã lớp (loại trừ ID hiện tại)
+        $existing = $repository->getByMaLop($formData['ma_lop'], (int)$id);
         if ($existing !== null) {
-            $errors['code'] = 'Mã sản phẩm "' . $formData['code'] . '" đã được sử dụng bởi sản phẩm khác (#ID: ' . $existing['id'] . ').';
+            $errors['ma_lop'] = 'Mã lớp "' . $formData['ma_lop'] . '" đã được sử dụng bởi lớp khác (#ID: ' . $existing['id'] . ').';
         }
     }
 
-    // 2. Kiểm tra tên sản phẩm
-    if ($formData['name'] === '') {
-        $errors['name'] = 'Tên sản phẩm không được để trống.';
-    } elseif (mb_strlen($formData['name']) < 2 || mb_strlen($formData['name']) > 255) {
-        $errors['name'] = 'Tên sản phẩm phải có độ dài từ 2 đến 255 ký tự.';
+    // 2. Kiểm tra tên môn học
+    if ($formData['ten_mon_hoc'] === '') {
+        $errors['ten_mon_hoc'] = 'Tên môn học không được để trống.';
+    } elseif (mb_strlen($formData['ten_mon_hoc']) < 3 || mb_strlen($formData['ten_mon_hoc']) > 255) {
+        $errors['ten_mon_hoc'] = 'Tên môn học phải từ 3 đến 255 ký tự.';
     }
 
-    // 3. Kiểm tra đơn giá
-    if ($formData['price'] === '') {
-        $errors['price'] = 'Đơn giá không được để trống.';
-    } elseif (!is_numeric($formData['price']) || (float)$formData['price'] < 0) {
-        $errors['price'] = 'Đơn giá phải là số dương hợp lệ (>= 0).';
+    // 3. Kiểm tra số tín chỉ
+    if ($formData['so_tin_chi'] === '') {
+        $errors['so_tin_chi'] = 'Số tín chỉ không được để trống.';
+    } elseif (filter_var($formData['so_tin_chi'], FILTER_VALIDATE_INT) === false || (int)$formData['so_tin_chi'] < 1 || (int)$formData['so_tin_chi'] > 10) {
+        $errors['so_tin_chi'] = 'Số tín chỉ phải là số nguyên từ 1 đến 10.';
     }
 
-    // 4. Kiểm tra số lượng tồn kho
-    if ($formData['quantity'] === '') {
-        $errors['quantity'] = 'Số lượng không được để trống.';
-    } elseif (filter_var($formData['quantity'], FILTER_VALIDATE_INT) === false || (int)$formData['quantity'] < 0) {
-        $errors['quantity'] = 'Số lượng tồn kho phải là số nguyên không âm (>= 0).';
+    // 4. Kiểm tra giảng viên phụ trách
+    if ($formData['giang_vien'] === '') {
+        $errors['giang_vien'] = 'Tên giảng viên phụ trách không được để trống.';
+    } elseif (mb_strlen($formData['giang_vien']) < 3 || mb_strlen($formData['giang_vien']) > 150) {
+        $errors['giang_vien'] = 'Tên giảng viên phụ trách phải từ 3 đến 150 ký tự.';
     }
 
-    // 5. Kiểm tra trạng thái
-    if (!in_array($formData['status'], ['active', 'inactive'], true)) {
-        $errors['status'] = 'Trạng thái không hợp lệ.';
+    // 5. Kiểm tra phòng học
+    if ($formData['phong_hoc'] === '') {
+        $errors['phong_hoc'] = 'Phòng học không được để trống.';
+    } elseif (mb_strlen($formData['phong_hoc']) < 2 || mb_strlen($formData['phong_hoc']) > 50) {
+        $errors['phong_hoc'] = 'Phòng học phải từ 2 đến 50 ký tự.';
     }
 
-    // Nếu không có lỗi, cập nhật CSDL và điều hướng (PRG Pattern)
+    // 6. Kiểm tra lịch học
+    if ($formData['lich_hoc'] === '') {
+        $errors['lich_hoc'] = 'Lịch học không được để trống.';
+    } elseif (mb_strlen($formData['lich_hoc']) < 5 || mb_strlen($formData['lich_hoc']) > 150) {
+        $errors['lich_hoc'] = 'Lịch học phải từ 5 đến 150 ký tự.';
+    }
+
+    // 7. Kiểm tra sĩ số tối đa
+    if ($formData['si_so_toi_da'] === '') {
+        $errors['si_so_toi_da'] = 'Sĩ số tối đa không được để trống.';
+    } elseif (filter_var($formData['si_so_toi_da'], FILTER_VALIDATE_INT) === false || (int)$formData['si_so_toi_da'] < 10 || (int)$formData['si_so_toi_da'] > 200) {
+        $errors['si_so_toi_da'] = 'Sĩ số tối đa phải là số nguyên từ 10 đến 200 sinh viên.';
+    }
+
+    // 8. Kiểm tra trạng thái
+    if (!in_array($formData['trang_thai'], ['mo', 'khoa'], true)) {
+        $errors['trang_thai'] = 'Trạng thái lớp không hợp lệ.';
+    }
+
+    // Nếu không có lỗi, cập nhật CSDL và điều hướng PRG
     if (empty($errors)) {
         $updateData = [
-            'code'        => $formData['code'],
-            'name'        => $formData['name'],
-            'price'       => number_format((float)$formData['price'], 2, '.', ''),
-            'quantity'    => (int)$formData['quantity'],
-            'description' => $formData['description'] !== '' ? $formData['description'] : null,
-            'status'      => $formData['status'],
+            'ma_lop'       => $formData['ma_lop'],
+            'ten_mon_hoc'  => $formData['ten_mon_hoc'],
+            'so_tin_chi'   => (int)$formData['so_tin_chi'],
+            'giang_vien'   => $formData['giang_vien'],
+            'phong_hoc'    => $formData['phong_hoc'],
+            'lich_hoc'     => $formData['lich_hoc'],
+            'si_so_toi_da' => (int)$formData['si_so_toi_da'],
+            'trang_thai'   => $formData['trang_thai'],
+            'hoc_ky'       => $formData['hoc_ky'],
         ];
 
         $repository->update((int)$id, $updateData);
 
-        // Lưu thông báo vào Session
-        setFlash('success', 'Cập nhật thông tin sản phẩm "' . $formData['name'] . '" (Mã: ' . $formData['code'] . ') thành công!');
+        // Flash message
+        setFlash('success', 'Cập nhật thông tin lớp học phần "' . $formData['ten_mon_hoc'] . '" (Mã: ' . $formData['ma_lop'] . ') thành công!');
 
-        // Điều hướng về index.php
+        // POST-Redirect-GET
         redirect('index.php');
     }
 }
@@ -166,14 +196,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chỉnh Sửa #<?= (int)$product['id'] ?> - <?= e($product['name']) ?></title>
+    <title>Chỉnh Sửa #<?= (int)$classItem['id'] ?> - <?= e($classItem['ten_mon_hoc']) ?></title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap 5.3 & Font Awesome -->
+    <!-- Bootstrap 5.3 & Font Awesome 6 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
@@ -198,25 +228,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Topbar Minimalist */
         .top-navbar {
             background: #ffffff;
             border-bottom: 1px solid var(--border-light);
             padding: 0.85rem 0;
         }
         .brand-logo-box {
-            width: 38px;
-            height: 38px;
-            background: #eef2ff;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
             color: #4f46e5;
-            border-radius: 10px;
+            border-radius: 12px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.15rem;
+            font-size: 1.25rem;
+            border: 1px solid #c7d2fe;
         }
 
-        /* Form Card */
         .dashboard-card {
             background: #ffffff;
             border: 1px solid var(--border-light);
@@ -224,7 +253,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: var(--card-shadow);
         }
 
-        /* Form Controls */
         .form-label {
             font-size: 0.875rem;
             font-weight: 600;
@@ -245,14 +273,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: 0 0 0 3px var(--accent-ring);
             outline: none;
         }
-        .input-group-text {
-            background-color: #f8fafc;
-            border: 1px solid var(--border-light);
-            color: var(--text-secondary);
-            border-radius: 0 10px 10px 0;
-        }
 
-        /* Buttons */
         .btn-accent {
             background-color: var(--accent-primary);
             border-color: var(--accent-primary);
@@ -292,7 +313,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #0f172a;
         }
 
-        /* Soft Alert */
         .alert-soft-danger {
             background-color: #fef2f2;
             border: 1px solid #fecaca;
@@ -309,11 +329,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="d-flex align-items-center justify-content-between">
                 <a href="index.php" class="d-flex align-items-center gap-2 text-decoration-none">
                     <div class="brand-logo-box">
-                        <i class="fa-solid fa-cube"></i>
+                        <i class="fa-solid fa-graduation-cap"></i>
                     </div>
                     <div>
-                        <span class="fs-5 fw-bold text-dark d-block lh-1">ShopDemo</span>
-                        <small class="text-secondary" style="font-size: 0.75rem;">Product Management System</small>
+                        <span class="fs-5 fw-bold text-dark d-block lh-1">StudentHub</span>
+                        <small class="text-secondary" style="font-size: 0.75rem;">Quản Lý Lớp Học Phần &bull; Tạ Như Quỳnh</small>
                     </div>
                 </a>
                 <a href="index.php" class="btn-soft-back small">
@@ -327,22 +347,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-3">
             <ol class="breadcrumb small">
-                <li class="breadcrumb-item"><a href="index.php" class="text-decoration-none text-secondary">Sản phẩm</a></li>
-                <li class="breadcrumb-item"><a href="detail.php?id=<?= (int)$product['id'] ?>" class="text-decoration-none text-secondary">Chi tiết #<?= (int)$product['id'] ?></a></li>
+                <li class="breadcrumb-item"><a href="index.php" class="text-decoration-none text-secondary">Lớp học phần</a></li>
+                <li class="breadcrumb-item"><a href="detail.php?id=<?= (int)$classItem['id'] ?>" class="text-decoration-none text-secondary">Chi tiết #<?= (int)$classItem['id'] ?></a></li>
                 <li class="breadcrumb-item text-secondary active" aria-current="page">Chỉnh sửa</li>
             </ol>
         </nav>
 
         <div class="row justify-content-center">
-            <div class="col-lg-8">
+            <div class="col-lg-9">
                 <div class="dashboard-card overflow-hidden">
                     <div class="p-4 border-bottom d-flex align-items-center justify-content-between" style="border-color: var(--border-light) !important;">
                         <div>
-                            <h2 class="h4 fw-bold text-dark mb-1">Chỉnh Sửa Sản Phẩm</h2>
-                            <p class="text-secondary small mb-0">Cập nhật thông số kỹ thuật và giá cả của sản phẩm #<?= (int)$product['id'] ?>.</p>
+                            <h2 class="h4 fw-bold text-dark mb-1">
+                                <i class="fa-solid fa-pen-to-square text-primary me-2"></i>Chỉnh Sửa Lớp Học Phần
+                            </h2>
+                            <p class="text-secondary small mb-0">Cập nhật thông tin cho lớp học phần #<?= (int)$classItem['id'] ?> - <?= e($classItem['ma_lop']) ?>.</p>
                         </div>
                         <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill small">
-                            ID: #<?= (int)$product['id'] ?>
+                            ID: #<?= (int)$classItem['id'] ?>
                         </span>
                     </div>
 
@@ -351,7 +373,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="alert-soft-danger mb-4">
                                 <div class="d-flex align-items-center mb-2">
                                     <i class="fa-solid fa-circle-exclamation me-2 fs-5"></i>
-                                    <strong>Vui lòng kiểm tra lại thông tin biểu mẫu:</strong>
+                                    <strong>Vui lòng kiểm tra lại các trường dữ liệu:</strong>
                                 </div>
                                 <ul class="mb-0 ps-4 small">
                                     <?php foreach ($errors as $errorMsg): ?>
@@ -361,113 +383,162 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         <?php endif; ?>
 
-                        <form action="edit.php?id=<?= (int)$product['id'] ?>" method="POST" novalidate>
+                        <form action="edit.php?id=<?= (int)$classItem['id'] ?>" method="POST" novalidate>
                             <div class="row g-3">
-                                <!-- Mã sản phẩm -->
+                                <!-- Mã lớp -->
                                 <div class="col-md-6">
-                                    <label for="code" class="form-label">
-                                        Mã Sản Phẩm (SKU) <span class="text-danger">*</span>
+                                    <label for="ma_lop" class="form-label">
+                                        Mã Lớp Học Phần <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" 
-                                           class="form-control <?= isset($errors['code']) ? 'is-invalid' : '' ?>" 
-                                           id="code" 
-                                           name="code" 
-                                           value="<?= e($formData['code']) ?>" 
+                                           class="form-control <?= isset($errors['ma_lop']) ? 'is-invalid' : '' ?>" 
+                                           id="ma_lop" 
+                                           name="ma_lop" 
+                                           value="<?= e($formData['ma_lop']) ?>" 
                                            required>
-                                    <?php if (isset($errors['code'])): ?>
-                                        <div class="invalid-feedback small"><?= e($errors['code']) ?></div>
+                                    <?php if (isset($errors['ma_lop'])): ?>
+                                        <div class="invalid-feedback small"><?= e($errors['ma_lop']) ?></div>
                                     <?php else: ?>
-                                        <div class="form-text text-secondary" style="font-size: 0.8rem;">Mã định danh duy nhất (3-50 ký tự).</div>
+                                        <div class="form-text text-secondary" style="font-size: 0.8rem;">3-50 ký tự in hoa, số, gạch ngang (-) hoặc gạch dưới (_).</div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Tên môn học -->
+                                <div class="col-md-6">
+                                    <label for="ten_mon_hoc" class="form-label">
+                                        Tên Môn Học <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control <?= isset($errors['ten_mon_hoc']) ? 'is-invalid' : '' ?>" 
+                                           id="ten_mon_hoc" 
+                                           name="ten_mon_hoc" 
+                                           value="<?= e($formData['ten_mon_hoc']) ?>" 
+                                           required>
+                                    <?php if (isset($errors['ten_mon_hoc'])): ?>
+                                        <div class="invalid-feedback small"><?= e($errors['ten_mon_hoc']) ?></div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Số tín chỉ -->
+                                <div class="col-md-4">
+                                    <label for="so_tin_chi" class="form-label">
+                                        Số Tín Chỉ <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" 
+                                           min="1" 
+                                           max="10" 
+                                           class="form-control <?= isset($errors['so_tin_chi']) ? 'is-invalid' : '' ?>" 
+                                           id="so_tin_chi" 
+                                           name="so_tin_chi" 
+                                           value="<?= e($formData['so_tin_chi']) ?>" 
+                                           required>
+                                    <?php if (isset($errors['so_tin_chi'])): ?>
+                                        <div class="invalid-feedback small"><?= e($errors['so_tin_chi']) ?></div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Giảng viên phụ trách -->
+                                <div class="col-md-8">
+                                    <label for="giang_vien" class="form-label">
+                                        Giảng Viên Phụ Trách <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control <?= isset($errors['giang_vien']) ? 'is-invalid' : '' ?>" 
+                                           id="giang_vien" 
+                                           name="giang_vien" 
+                                           value="<?= e($formData['giang_vien']) ?>" 
+                                           required>
+                                    <?php if (isset($errors['giang_vien'])): ?>
+                                        <div class="invalid-feedback small"><?= e($errors['giang_vien']) ?></div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Phòng học -->
+                                <div class="col-md-6">
+                                    <label for="phong_hoc" class="form-label">
+                                        Phòng Học <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control <?= isset($errors['phong_hoc']) ? 'is-invalid' : '' ?>" 
+                                           id="phong_hoc" 
+                                           name="phong_hoc" 
+                                           value="<?= e($formData['phong_hoc']) ?>" 
+                                           required>
+                                    <?php if (isset($errors['phong_hoc'])): ?>
+                                        <div class="invalid-feedback small"><?= e($errors['phong_hoc']) ?></div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Lịch học -->
+                                <div class="col-md-6">
+                                    <label for="lich_hoc" class="form-label">
+                                        Lịch Học <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control <?= isset($errors['lich_hoc']) ? 'is-invalid' : '' ?>" 
+                                           id="lich_hoc" 
+                                           name="lich_hoc" 
+                                           value="<?= e($formData['lich_hoc']) ?>" 
+                                           required>
+                                    <?php if (isset($errors['lich_hoc'])): ?>
+                                        <div class="invalid-feedback small"><?= e($errors['lich_hoc']) ?></div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Sĩ số tối đa -->
+                                <div class="col-md-4">
+                                    <label for="si_so_toi_da" class="form-label">
+                                        Sĩ Số Tối Đa (SV) <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" 
+                                           min="10" 
+                                           max="200" 
+                                           class="form-control <?= isset($errors['si_so_toi_da']) ? 'is-invalid' : '' ?>" 
+                                           id="si_so_toi_da" 
+                                           name="si_so_toi_da" 
+                                           value="<?= e($formData['si_so_toi_da']) ?>" 
+                                           required>
+                                    <?php if (isset($errors['si_so_toi_da'])): ?>
+                                        <div class="invalid-feedback small"><?= e($errors['si_so_toi_da']) ?></div>
                                     <?php endif; ?>
                                 </div>
 
                                 <!-- Trạng thái -->
-                                <div class="col-md-6">
-                                    <label for="status" class="form-label">
-                                        Trạng Thái Kinh Doanh <span class="text-danger">*</span>
+                                <div class="col-md-4">
+                                    <label for="trang_thai" class="form-label">
+                                        Trạng Thái Đăng Ký <span class="text-danger">*</span>
                                     </label>
-                                    <select class="form-select <?= isset($errors['status']) ? 'is-invalid' : '' ?>" 
-                                            id="status" 
-                                            name="status" 
+                                    <select class="form-select <?= isset($errors['trang_thai']) ? 'is-invalid' : '' ?>" 
+                                            id="trang_thai" 
+                                            name="trang_thai" 
                                             required>
-                                        <option value="active" <?= ($formData['status'] === 'active') ? 'selected' : '' ?>>
-                                            Đang bán (Active)
+                                        <option value="mo" <?= ($formData['trang_thai'] === 'mo') ? 'selected' : '' ?>>
+                                            Đang mở đăng ký
                                         </option>
-                                        <option value="inactive" <?= ($formData['status'] === 'inactive') ? 'selected' : '' ?>>
-                                            Ngừng bán (Inactive)
+                                        <option value="khoa" <?= ($formData['trang_thai'] === 'khoa') ? 'selected' : '' ?>>
+                                            Đã khóa lớp
                                         </option>
                                     </select>
-                                    <?php if (isset($errors['status'])): ?>
-                                        <div class="invalid-feedback small"><?= e($errors['status']) ?></div>
+                                    <?php if (isset($errors['trang_thai'])): ?>
+                                        <div class="invalid-feedback small"><?= e($errors['trang_thai']) ?></div>
                                     <?php endif; ?>
                                 </div>
 
-                                <!-- Tên sản phẩm -->
-                                <div class="col-12">
-                                    <label for="name" class="form-label">
-                                        Tên Sản Phẩm <span class="text-danger">*</span>
+                                <!-- Học kỳ -->
+                                <div class="col-md-4">
+                                    <label for="hoc_ky" class="form-label">
+                                        Học Kỳ Áp Dụng <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" 
-                                           class="form-control <?= isset($errors['name']) ? 'is-invalid' : '' ?>" 
-                                           id="name" 
-                                           name="name" 
-                                           value="<?= e($formData['name']) ?>" 
+                                           class="form-control" 
+                                           id="hoc_ky" 
+                                           name="hoc_ky" 
+                                           value="<?= e($formData['hoc_ky']) ?>" 
                                            required>
-                                    <?php if (isset($errors['name'])): ?>
-                                        <div class="invalid-feedback small"><?= e($errors['name']) ?></div>
-                                    <?php endif; ?>
-                                </div>
-
-                                <!-- Giá bán -->
-                                <div class="col-md-6">
-                                    <label for="price" class="form-label">
-                                        Đơn Giá Bán (VNĐ) <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="input-group">
-                                        <input type="number" 
-                                               step="0.01" 
-                                               min="0" 
-                                               class="form-control <?= isset($errors['price']) ? 'is-invalid' : '' ?>" 
-                                               id="price" 
-                                               name="price" 
-                                               value="<?= e($formData['price']) ?>" 
-                                               required>
-                                        <span class="input-group-text">₫</span>
-                                        <?php if (isset($errors['price'])): ?>
-                                            <div class="invalid-feedback small"><?= e($errors['price']) ?></div>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-
-                                <!-- Số lượng -->
-                                <div class="col-md-6">
-                                    <label for="quantity" class="form-label">
-                                        Số Lượng Tồn Kho <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="number" 
-                                           step="1" 
-                                           min="0" 
-                                           class="form-control <?= isset($errors['quantity']) ? 'is-invalid' : '' ?>" 
-                                           id="quantity" 
-                                           name="quantity" 
-                                           value="<?= e($formData['quantity']) ?>" 
-                                           required>
-                                    <?php if (isset($errors['quantity'])): ?>
-                                        <div class="invalid-feedback small"><?= e($errors['quantity']) ?></div>
-                                    <?php endif; ?>
-                                </div>
-
-                                <!-- Mô tả chi tiết -->
-                                <div class="col-12">
-                                    <label for="description" class="form-label">Mô Tả Sản Phẩm</label>
-                                    <textarea class="form-control" 
-                                              id="description" 
-                                              name="description" 
-                                              rows="4"><?= e($formData['description']) ?></textarea>
                                 </div>
                             </div>
 
-                            <div class="d-flex align-items-center justify-content-between pt-4 mt-3 border-top" style="border-color: var(--border-light) !important;">
+                            <div class="d-flex align-items-center justify-content-between pt-4 mt-4 border-top" style="border-color: var(--border-light) !important;">
                                 <a href="index.php" class="btn-soft-back">
                                     <i class="fa-solid fa-arrow-left"></i> Hủy & Quay Lại
                                 </a>
